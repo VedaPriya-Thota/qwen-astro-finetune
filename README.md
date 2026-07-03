@@ -11,6 +11,9 @@ including an honest discussion of where the fine-tune fell short).
 See [`docs/vps_vllm_deployment.md`](docs/vps_vllm_deployment.md) for the
 deployment write-up.
 
+See [`examples/sample_outputs.md`](examples/sample_outputs.md) for the
+actual before/after (base vs. fine-tuned) generation comparison.
+
 ## Project Structure
 
 ```
@@ -36,11 +39,28 @@ qwen-astro-finetune/
 
 ## Setup
 
+**Prerequisites:** Python 3.11, internet access for the first run (downloads
+the Qwen2.5-0.5B tokenizer + base model, ~1GB total), and ~2GB free disk
+space for the model cache.
+
+**Windows (PowerShell):**
+```powershell
+python3.11 -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+**Windows (Command Prompt):**
+```cmd
+python3.11 -m venv .venv
+.venv\Scripts\activate.bat
+pip install -r requirements.txt
+```
+
+**macOS / Linux:**
 ```bash
 python3.11 -m venv .venv
-# Windows: .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
-
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
