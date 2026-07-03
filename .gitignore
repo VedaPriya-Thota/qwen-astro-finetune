@@ -1,0 +1,13 @@
+# Model cache — large (~1GB+), never commit; re-downloaded via preprocess.py/train.py
+models/
+~/.cache/huggingface/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db

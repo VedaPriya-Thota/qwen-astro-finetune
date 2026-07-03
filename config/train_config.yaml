@@ -1,0 +1,65 @@
+# ============================================================
+# Qwen2.5 LoRA SFT Config — Vedaz Astrology Assistant
+# ============================================================
+# Chosen model: Qwen2.5-0.5B-Instruct
+# Rationale (see docs/approach.md):
+#   - CPU-only training, limited storage
+#   - Qwen2.5 (not Qwen3) for a simpler, mature chat template
+#     and lighter inference stack on CPU
+#   - 0.5B is the smallest Qwen2.5-Instruct checkpoint that still
+#     has reliable instruction-following + Hindi/English coverage
+#
+# If you have more time/storage budget, you can swap to
+# "Qwen/Qwen2.5-1.5B-Instruct" below with no other code changes.
+# ============================================================
+
+model:
+  base_model_id: "Qwen/Qwen2.5-0.5B-Instruct"
+  cache_dir: "./models"                 # HF cache — downloaded weights land here
+  trust_remote_code: false
+  torch_dtype: "float32"                # CPU: float32 is fastest/most stable, no fp16 benefit without GPU
+
+data:
+  raw_path: "./data/raw/chat_data.json"
+  processed_dir: "./data/processed"
+  train_file: "train.jsonl"
+  eval_file: "eval.jsonl"
+  eval_split_size: 5                    # small holdout, just for loss sanity-check (55 examples total)
+  max_seq_length: 1024                  # conversations are short; keeps memory/time low on CPU
+  seed: 42
+
+lora:
+  r: 16                                 # rank — 8-16 is standard for small SFT datasets
+  lora_alpha: 32                        # 2x rank, standard heuristic
+  lora_dropout: 0.05
+  bias: "none"
+  target_modules:                       # attention projections; sufficient for persona/style adaptation
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+  task_type: "CAUSAL_LM"
+
+training:
+  output_dir: "./outputs/adapter"
+  logging_dir: "./outputs/logs"
+  num_train_epochs: 4                   # small dataset (55 examples) — more risks memorization
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8        # effective batch size = 8, without needing memory for it
+  learning_rate: 0.0002                 # 2e-4, standard for LoRA
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.03
+  weight_decay: 0.01
+  logging_steps: 5
+  save_strategy: "epoch"
+  eval_strategy: "epoch"
+  save_total_limit: 2
+  report_to: "none"                     # no W&B/external trackers — keep it simple
+  seed: 42
+
+inference:
+  adapter_path: "./outputs/adapter"
+  max_new_tokens: 256
+  temperature: 0.7
+  top_p: 0.9
+  sample_prompts_file: "./examples/sample_outputs.md"
